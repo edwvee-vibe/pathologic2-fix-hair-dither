@@ -5,9 +5,9 @@ checkerboard pattern that slowly crawls and shimmers over time, even with anti-a
 visible on some main characters and on the fringes of townswomen. Rendering at a higher resolution only partly hides
 it and costs a lot of performance.
 
-This mod makes it much better: the pattern no longer crawls over the hair, and anti-aliasing can now blend it into
-a soft edge. It is an improvement, not a complete cure: hair is still drawn the same way, so some grain can remain,
-especially up close or in motion. The mod costs no performance and changes nothing else in the game. It looks best
+This mod makes it noticeably better: the pattern crawls much less, and anti-aliasing blends most of it into a softer
+edge. It is an improvement, not a complete cure: hair is still drawn the same way, so some grain and shimmer can
+remain, especially up close or in motion. The mod costs no performance and changes nothing else in the game. It looks best
 with DLAA.
 
 ## Why it happens
