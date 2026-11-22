@@ -1,6 +1,6 @@
 # Pathologic 2: fix for checkerboard hair
 
-In Pathologic 2 hair often looks grainy: the edges of hair, fringes and eyelashes are covered with a checkerboard,
+In Pathologic 2 hair often looks grainy: the edges of hair and fringes are covered with a checkerboard,
 dotted pattern that stays even with anti-aliasing (TAA or DLAA). It is most visible on some main characters and on the
 fringes of townswomen. Rendering at a higher resolution only partly hides it and costs a lot of performance.
 
