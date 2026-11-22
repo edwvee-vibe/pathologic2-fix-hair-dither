@@ -11,43 +11,57 @@ turns it into a smooth semi-transparent edge. Works best with DLAA.
 
 - **Pathologic 2** for Windows, game version **2.1.31648** (current Steam version) or 2.1.31563.
   Other versions are recognized as unknown and left untouched.
-- Windows 10 or 11. Nothing else to install: the fix runs on the built-in Windows PowerShell 5.1. No BepInEx needed.
 - The fix changes one game file, `Pathologic_Data\globalgamemanagers.assets` (only the two shaders inside it; the file
   size stays the same). Saves are not touched.
 
 ## Installation
 
+There are two variants with the same fix. Pick one, don't use both: the BepInEx patcher would undo `disable.bat`
+at the next game start.
+
+### Option 1 (recommended): BepInEx patcher
+
+`Pathologic2HairDitherFix-BepInEx-<version>.zip`. Needs **BepInEx 5 x64** (not x86, not 6.x).
+
+1. Install BepInEx 5 x64 into the game folder (next to `Pathologic.exe`) and start the game once.
+2. Extract the archive into the game folder. The patcher ends up in
+   `BepInEx\patchers\pathologic2-fix-hair-dither\Pathologic2HairDitherFix.dll`.
+3. Start the game. `BepInEx\LogOutput.log` should contain
+   `Pathologic 2 Hair Dither Fix 1.2.0: Enabled=True, state ON`.
+
+The patcher checks the file at every game start, so after a game update or a Steam file verification the fix comes
+back by itself.
+
+- **Disable:** set `Enabled = false` in `BepInEx\config\pathologic2.hairdither.cfg` and start the game once.
+  The original file is put back.
+- **Uninstall:** disable it first (see above), then delete the `BepInEx\patchers\pathologic2-fix-hair-dither` folder.
+
+### Option 2: without BepInEx (.bat files)
+
+`Pathologic2HairDitherFix-<version>.zip`. For those who don't want any dependencies: it runs on the built-in
+Windows PowerShell 5.1 (Windows 10 or 11), nothing else to install.
+
 1. Close the game.
-2. Extract `Pathologic2HairDitherFix-<version>.zip` into the game folder (the one with `Pathologic.exe`).
+2. Extract the archive into the game folder (the one with `Pathologic.exe`).
    All mod files start with `pathologic2-fix-hair-dither`.
-3. Double-click **`pathologic2-fix-hair-dither-enable.bat`**.
-4. A console window shows what was done and ends with `Done.` Press any key to close it and start the game.
+3. Double-click **`pathologic2-fix-hair-dither-enable.bat`**. A console window shows what was done and ends with
+   `Done.` Press any key to close it and start the game.
 
 If the files are not in the game folder, the game is searched for in Steam libraries and GOG; if it is still not found,
 a dialog asks for the folder with `Pathologic.exe`.
 
-## Uninstall
+- **After a game update** or a Steam file verification the fix is gone: run the enable file again.
+- **Disable:** double-click **`pathologic2-fix-hair-dither-disable.bat`** (game closed). It writes back the exact
+  original bytes, so no backup file is needed.
+- **Uninstall:** disable it first, then delete the `pathologic2-fix-hair-dither*` files.
 
-Double-click **`pathologic2-fix-hair-dither-disable.bat`** (game closed). It writes back the exact original bytes,
-so no backup file is needed. Then delete the `pathologic2-fix-hair-dither*` files. Verifying the game files in Steam
-also restores the original.
-
-## After a game update
-
-An update or a Steam file verification replaces the file and removes the fix. Run the enable file again. If the update
-changed the file itself, the mod reports an unknown game version and changes nothing: wait for a new version of the mod.
-
-## Troubleshooting
-
+Troubleshooting:
 - **"Windows protected your PC"**: Windows warns about `.bat` files from downloaded archives. Click
   *More info* > *Run anyway*, or open the archive's *Properties* and tick *Unblock* before extracting.
 - **"No write access"**: the game is in a protected folder. Right-click the `.bat` file > *Run as administrator*.
 - **"The game is running"**: close Pathologic 2 first.
-- **"This game file is not one the mod knows"**: another game version, or the file was changed by another tool.
-  Nothing was changed. Verify the game files in Steam and try again; if that does not help, the mod needs an update.
 
-## Command line
-
+Command line:
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File pathologic2-fix-hair-dither.ps1            # show the state only
 powershell -NoProfile -ExecutionPolicy Bypass -File pathologic2-fix-hair-dither.ps1 -Apply     # fix on
@@ -55,26 +69,23 @@ powershell -NoProfile -ExecutionPolicy Bypass -File pathologic2-fix-hair-dither.
 ```
 `-GameDir "<folder>"` skips the search.
 
+### "This game file is not one the mod knows"
+
+Both variants say this for another game version or a file changed by another tool, and change nothing. Verify the
+game files in Steam and try again; if the game was updated and that does not help, the mod needs an update.
+
 ## How it works
 
-The release script contains, for every supported game version, the original and the patched shader data, their
-positions in the file and SHA-256 hashes of the original and the patched file. It recognizes the game version by the
-hash of the file with the shader data blanked out, writes the prepared bytes and checks that the result has exactly the
-expected hash before saving. Files it does not recognize are never written.
+Both variants contain, for every supported game version, the original and the patched shader data, their positions in
+the file and SHA-256 hashes of the original and the patched file. They recognize the game version by the hash of the
+file with the shader data blanked out, write the prepared bytes and check that the result has exactly the expected
+hash before saving. Files they do not recognize are never written. The BepInEx variant does this in a preloader
+patcher (it patches no assemblies), before Unity loads the game data.
 
 The patched shaders themselves: in each of the 112 pixel shaders, 2 bits are changed in the `cb1[0].x` operand of an
 `add` instruction (`_Time` from `UnityPerCamera`) to `.y`, the DXBC container checksum is recomputed (D3D11 verifies
 it), and the shader blob is recompressed with LZ4 and written back in place with the remainder zero-filled (Unity reads
 exactly `compressedLength` bytes).
-
-## BepInEx variant
-
-`Pathologic2HairDitherFix-BepInEx-<version>.zip` (needs BepInEx 5 x64): a preloader patcher
-`BepInEx\patchers\pathologic2-fix-hair-dither\Pathologic2HairDitherFix.dll` with the same data. At every game start it
-checks `globalgamemanagers.assets` and writes the fix in (so it comes back by itself after a game update), or the
-original back with `Enabled = false` in `BepInEx\config\pathologic2.hairdither.cfg`. The result is in `BepInEx\LogOutput.log`:
-`Pathologic 2 Hair Dither Fix 1.2.0: Enabled=True, state ON`. Don't use it together with the `.bat` variant:
-the patcher would undo `disable.bat` at the next start.
 
 ## For developers (source folder)
 
