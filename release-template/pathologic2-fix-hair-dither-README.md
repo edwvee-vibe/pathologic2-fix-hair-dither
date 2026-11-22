@@ -1,6 +1,6 @@
 # Pathologic 2 Hair Dither Fix
 
-Removes the checkerboard pattern on soft hair edges. Best with DLAA.
+Makes the crawling checkerboard pattern on hair edges much less visible. Best with DLAA.
 For game version 2.1.31648 (current Steam version) and 2.1.31563.
 
 ## Enable
