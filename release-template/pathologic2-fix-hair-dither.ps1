@@ -23,6 +23,10 @@ trap { Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red; exit 1 
 
 $ModVersion = '1.2.0'
 #@@DATA@@ (build.ps1 puts $Builds and $Payload here)
+if (-not (Get-Variable -Name Builds -Scope Script -ErrorAction SilentlyContinue)) {
+    throw ('This is the source template without game data, it cannot patch anything. Use the built release: ' +
+        'Pathologic2HairDitherFix-<version>.zip from the GitHub releases, or dist\ after build.ps1.')
+}
 
 function Assert-GameClosed {
     if (Get-Process -Name Pathologic -ErrorAction SilentlyContinue) { throw 'The game is running; close it first.' }

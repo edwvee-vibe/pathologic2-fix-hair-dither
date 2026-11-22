@@ -1,9 +1,9 @@
-# Build the release: dist\Pathologic2HairDitherFix-<version>.zip (version = $ModVersion in release\pathologic2-fix-hair-dither.ps1).
+# Build the release: dist\Pathologic2HairDitherFix-<version>.zip (version = $ModVersion in release-template\pathologic2-fix-hair-dither.ps1).
 # The archive holds only files with the mod prefix, to be extracted straight into the game folder:
 #   pathologic2-fix-hair-dither.ps1             the patcher with all data built in (no C#, no other files needed)
 #   pathologic2-fix-hair-dither-enable.bat      double-click: fix on
 #   pathologic2-fix-hair-dither-disable.bat     double-click: original file back
-#   pathologic2-fix-hair-dither-README.md      short player instructions (release\, not the project README)
+#   pathologic2-fix-hair-dither-README.md      short player instructions (release-template\, not the project README)
 #
 # How: for every ORIGINAL globalgamemanagers.assets found (backup\globalgamemanagers.assets* and the installed game),
 # patch.ps1 + HairDither.cs make the _Time.y version; the shader blobs of both versions, their positions and the file
@@ -20,7 +20,7 @@ $root = $PSScriptRoot
 $prefix = 'pathologic2-fix-hair-dither'
 $dist = Join-Path $root 'dist'
 $stage = Join-Path $dist 'stage'
-$template = Join-Path $root "release\$prefix.ps1"
+$template = Join-Path $root "release-template\$prefix.ps1"
 $shaders = @(
     @{ Name = 'Pathologic/Universal Dithered'; Editor = 'Shaders.UniversalEditor' },
     @{ Name = 'Pathologic/Universal Metallic Dithered'; Editor = 'Shaders.UniversalMetallicEditor' }
@@ -96,10 +96,10 @@ foreach ($src in $Sources) {
     }
     if ($null -eq $regions) { "skip (not an original): $src"; continue }
     $hash = Get-Sha256 $data
+    $skeleton = Get-SkeletonHash $data $regions
+    if ($src -eq $gameFile) { $gameSkeleton = $skeleton }   # before the duplicate check: labels a backup of the same build
     if ($seen[$hash]) { "skip (same as $($seen[$hash])): $src"; continue }
     $seen[$hash] = $src
-    $skeleton = Get-SkeletonHash $data $regions
-    if ($src -eq $gameFile) { $gameSkeleton = $skeleton }
 
     & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'patch.ps1') -File $src -OutFile $tmp -Apply -Component y |
         ForEach-Object { "    $_" }
@@ -123,7 +123,10 @@ foreach ($src in $Sources) {
 }
 if (-not $builds) { throw 'No original globalgamemanagers.assets found (backup\ or the game folder).' }
 foreach ($b in $builds) {
-    if (-not $b.Game) { $b.Game = if ($logVersion -and $b.Skeleton -eq $gameSkeleton) { $logVersion } else { 'unknown' } }
+    if (-not $b.Game -and $logVersion -and $b.Skeleton -eq $gameSkeleton) { $b.Game = $logVersion }
+    if (-not $b.Game) {
+        throw "Game version of $($b.Src) is unknown: rename it to globalgamemanagers.assets.<game version> (e.g. .2.1.31648)."
+    }
     "build $($b.Game): $($b.Src)"
 }
 
@@ -161,14 +164,14 @@ if (Test-Path $stage) { Remove-Item -Recurse -Force $stage -Confirm:$false }
 New-Item -ItemType Directory -Force $stage | Out-Null
 [IO.File]::WriteAllText("$stage\$prefix.ps1", $script, (New-Object Text.ASCIIEncoding))
 foreach ($bat in "$prefix-enable.bat", "$prefix-disable.bat") {
-    $b = [IO.File]::ReadAllBytes("$root\release\$bat")
+    $b = [IO.File]::ReadAllBytes("$root\release-template\$bat")
     for ($i = 0; $i -lt $b.Length; $i++) {
         if ($b[$i] -gt 127) { throw "$bat has a non-ASCII byte at $i" }
         if ($b[$i] -eq 10 -and ($i -eq 0 -or $b[$i - 1] -ne 13)) { throw "$bat has an LF without CR at $i (cmd.exe needs CRLF)" }
     }
-    Copy-Item "$root\release\$bat" $stage
+    Copy-Item "$root\release-template\$bat" $stage
 }
-Copy-Item "$root\release\$prefix-README.md" $stage
+Copy-Item "$root\release-template\$prefix-README.md" $stage
 "Release script: $((Get-Item "$stage\$prefix.ps1").Length) bytes, game versions: $(($builds | % { $_.Game }) -join ', ')"
 
 # Self-test of the built script on copies of the originals

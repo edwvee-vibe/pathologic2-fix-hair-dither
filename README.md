@@ -108,8 +108,8 @@ game version: in `backup\` as `globalgamemanagers.assets.<game version>`, or the
 | `HairDither.cs` | Shader patching code, compiled by `Add-Type` (see below) | no, build only |
 | `patch.ps1` | Patches one file with `HairDither.cs`; used by `build.ps1`, also usable by hand | no |
 | `build.ps1` | Makes the data and both release archives, self-tests them | no |
-| `release\pathologic2-fix-hair-dither.ps1` | Template of the release script: game search, hash checks, byte copy; `#@@DATA@@` is replaced with the data | yes, with data |
-| `release\*.bat`, `release\*-README.md` | Player files of the `.bat` variant | yes |
+| `release-template\pathologic2-fix-hair-dither.ps1` | Template of the release script: game search, hash checks, byte copy; `#@@DATA@@` is replaced with the data | yes, with data |
+| `release-template\*.bat`, `release-template\*-README.md` | Player files of the `.bat` variant | yes |
 | `bepinex\src\Core.cs` | Same as the release script, in C#: reads the embedded data, checks hashes, copies bytes | yes, in the DLL |
 | `bepinex\src\Patcher.cs` | BepInEx preloader entry point, config `Enabled` | yes, in the DLL |
 | `bepinex\selftest.ps1` | Self-test of the built DLL | no |
@@ -129,7 +129,7 @@ game version: in `backup\` as `globalgamemanagers.assets.<game version>`, or the
 
 - `build.ps1` builds `dist\Pathologic2HairDitherFix-<version>.zip`: it takes every original
   `globalgamemanagers.assets` from `backup\` (`globalgamemanagers.assets.<game version>`) and the installed game,
-  makes the patched version with `patch.ps1`, builds the data into `release\pathologic2-fix-hair-dither.ps1`
+  makes the patched version with `patch.ps1`, builds the data into `release-template\pathologic2-fix-hair-dither.ps1`
   (version: `$ModVersion` there) and self-tests the result on copies of every original. Then it writes the same data
   to `bepinex\obj\hairdither.data`, builds `bepinex\` (the patcher, data as an embedded resource) and self-tests it
   (`bepinex\selftest.ps1`), giving `dist\Pathologic2HairDitherFix-BepInEx-<version>.zip`.
