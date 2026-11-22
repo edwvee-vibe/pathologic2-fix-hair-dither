@@ -1,8 +1,9 @@
 # Pathologic 2: fix for checkerboard hair
 
-In Pathologic 2 hair often looks grainy: the edges of hair and fringes are covered with a checkerboard,
-dotted pattern that stays even with anti-aliasing (TAA or DLAA). It is most visible on some main characters and on the
-fringes of townswomen. Rendering at a higher resolution only partly hides it and costs a lot of performance.
+In Pathologic 2 hair often looks grainy and unstable: the edges of hair and fringes are covered with a dotted
+checkerboard pattern that slowly crawls and shimmers over time, even with anti-aliasing (TAA or DLAA) on. It is most
+visible on some main characters and on the fringes of townswomen. Rendering at a higher resolution only partly hides
+it and costs a lot of performance.
 
 This mod fixes it: hair edges become smooth and soft, like they were meant to be. It costs no performance and changes
 nothing else in the game. It looks best with DLAA.
@@ -12,8 +13,8 @@ nothing else in the game. It looks best with DLAA.
 Soft hair edges (`*_Hair_Fade` materials), eyelashes and some bodies are rendered with the
 `Pathologic/Universal Dithered` and `Pathologic/Universal Metallic Dithered` shaders. Instead of blending transparency,
 these shaders discard pixels against a noise threshold (Interleaved Gradient Noise), relying on TAA to average it out.
-The noise is animated via `_Time.x` (time/20) and barely changes between frames, so neither TAA nor DLAA smooths it:
-a static pattern remains. The fix switches the noise to `_Time.y` (time): it changes every frame, and anti-aliasing
+The noise is animated via `_Time.x` (time/20): it drifts slowly, so the pattern visibly crawls, but it changes too
+little between frames for TAA or DLAA to average it out, so the pattern itself stays. The fix switches the noise to `_Time.y` (time): it changes every frame, and anti-aliasing
 turns it into a smooth semi-transparent edge.
 
 ## Requirements
